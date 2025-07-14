@@ -4,6 +4,7 @@
 .env.production
 .env.staging
 .env.development
+.cursorrules
 
 # Node.js Dependencies
 node_modules/
