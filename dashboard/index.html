@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning AI Assistant - Dashboard</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --secondary-color: #6c757d;
+      --success-color: #198754;
+      --info-color: #0dcaf0;
+      --warning-color: #ffc107;
+      --danger-color: #dc3545;
+    }
+
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .navbar {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stats-card {
+      transition: transform 0.2s ease-in-out;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stats-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .message-card {
+      transition: all 0.2s ease-in-out;
+      border-left: 4px solid #dee2e6;
+    }
+
+    .message-card.telegram {
+      border-left-color: #0088cc;
+    }
+
+    .message-card.discord {
+      border-left-color: #5865f2;
+    }
+
+    .message-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .platform-badge.telegram {
+      background-color: #0088cc;
+    }
+
+    .platform-badge.discord {
+      background-color: #5865f2;
+    }
+
+    .message-type-user {
+      background-color: #e3f2fd;
+    }
+
+    .message-type-bot {
+      background-color: #f3e5f5;
+    }
+
+    .search-section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .loading-spinner {
+      display: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+
+    .pagination-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    .status-online {
+      background-color: var(--success-color);
+    }
+
+    .status-offline {
+      background-color: var(--secondary-color);
+    }
+
+    @media (max-width: 768px) {
+      .col-md-3 {
+        margin-bottom: 1rem;
+      }
+      
+      .table-responsive {
+        font-size: 0.875rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="bi bi-robot"></i>
+        Learning AI Assistant
+      </a>
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="#">
+              <i class="bi bi-house"></i>
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/api/chats" target="_blank">
+              <i class="bi bi-code-slash"></i>
+              API
+            </a>
+          </li>
+        </ul>
+        
+        <div class="navbar-nav">
+          <div class="nav-item">
+            <span class="nav-link">
+              <span class="status-indicator" id="statusIndicator"></span>
+              <span id="statusText">Checking...</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-4">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stats-card bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="card-title" id="totalMessages">0</h4>
+                <p class="card-text">Total Messages</p>
+              </div>
+              <div class="align-self-center">
+                <i class="bi bi-chat-dots fs-1"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stats-card bg-info text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="card-title" id="telegramMessages">0</h4>
+                <p class="card-text">Telegram</p>
+              </div>
+              <div class="align-self-center">
+                <i class="bi bi-telegram fs-1"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stats-card bg-warning text-dark">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="card-title" id="discordMessages">0</h4>
+                <p class="card-text">Discord</p>
+              </div>
+              <div class="align-self-center">
+                <i class="bi bi-discord fs-1"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stats-card bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="card-title" id="recentMessages">0</h4>
+                <p class="card-text">Last 24h</p>
+              </div>
+              <div class="align-self-center">
+                <i class="bi bi-clock fs-1"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="search-section">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="searchInput" class="form-label">
+            <i class="bi bi-search"></i>
+            Search Messages
+          </label>
+          <input type="text" class="form-control" id="searchInput" placeholder="Search in message text...">
+        </div>
+        
+        <div class="col-md-2 mb-3">
+          <label for="platformFilter" class="form-label">
+            <i class="bi bi-funnel"></i>
+            Platform
+          </label>
+          <select class="form-select" id="platformFilter">
+            <option value="">All Platforms</option>
+            <option value="telegram">Telegram</option>
+            <option value="discord">Discord</option>
+          </select>
+        </div>
+        
+        <div class="col-md-2 mb-3">
+          <label for="messageTypeFilter" class="form-label">
+            <i class="bi bi-person"></i>
+            Type
+          </label>
+          <select class="form-select" id="messageTypeFilter">
+            <option value="">All Types</option>
+            <option value="user">User Messages</option>
+            <option value="bot">Bot Responses</option>
+          </select>
+        </div>
+        
+        <div class="col-md-2 mb-3">
+          <label for="limitSelect" class="form-label">
+            <i class="bi bi-list"></i>
+            Per Page
+          </label>
+          <select class="form-select" id="limitSelect">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        
+        <div class="col-md-2 mb-3">
+          <label class="form-label">&nbsp;</label>
+          <div class="d-grid">
+            <button class="btn btn-outline-primary" id="refreshBtn">
+              <i class="bi bi-arrow-clockwise"></i>
+              Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Export and Clear Controls -->
+      <div class="row mt-3">
+        <div class="col-md-12">
+          <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+              <h6 class="mb-0">
+                <i class="bi bi-tools"></i>
+                Data Management
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="mb-2">Export Data</h6>
+                  <p class="text-muted small mb-2">Download your conversation data for AI training</p>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-success btn-sm" id="exportJsonBtn">
+                      <i class="bi bi-download"></i>
+                      Export JSON
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" id="exportCsvBtn">
+                      <i class="bi bi-filetype-csv"></i>
+                      Export CSV
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" id="showStatsBtn">
+                      <i class="bi bi-bar-chart"></i>
+                      Stats
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="mb-2">Clear Data</h6>
+                  <p class="text-muted small mb-2">Permanently delete messages from database</p>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-danger btn-sm" id="clearAllBtn">
+                      <i class="bi bi-trash"></i>
+                      Clear All
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" id="clearFilteredBtn">
+                      <i class="bi bi-funnel"></i>
+                      Clear Filtered
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="text-center loading-spinner" id="loadingSpinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading messages...</p>
+    </div>
+
+    <!-- Messages Table -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="bi bi-chat-square-dots"></i>
+          Chat Messages
+        </h5>
+        <span class="badge bg-primary" id="messageCount">0 messages</span>
+      </div>
+      
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th width="10%">Platform</th>
+                <th width="15%">User</th>
+                <th width="10%">Type</th>
+                <th width="45%">Message</th>
+                <th width="20%">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="messagesTableBody">
+              <!-- Messages will be populated here -->
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-state d-none" id="emptyState">
+          <i class="bi bi-inbox fs-1 text-muted"></i>
+          <h4>No Messages Found</h4>
+          <p>Try adjusting your search criteria or check back later.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper">
+      <nav aria-label="Messages pagination">
+        <ul class="pagination" id="pagination">
+          <!-- Pagination will be populated here -->
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Message Detail Modal -->
+  <div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Message Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="messageDetails">
+            <!-- Message details will be populated here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JavaScript -->
+  <script src="main.js"></script>
+</body>
+</html> 
